@@ -1,0 +1,33 @@
+{
+  "name": "gas-pa",
+  "version": "1.0.0",
+  "description": "Google Apps Script Personal Assistant - Email Management System",
+  "author": "Marco",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "watch": "node scripts/build.js --watch",
+    "push": "npm run build && clasp push",
+    "deploy": "npm run push && clasp deploy",
+    "logs": "clasp logs --tail",
+    "test": "npm run build && clasp run testEmailProcessing",
+    "setup": "clasp run setup",
+    "open": "clasp open",
+    "pull": "clasp pull"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-code": "^2.0.36",
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "google-apps-script",
+    "gmail",
+    "email",
+    "automation",
+    "personal-assistant",
+    "typescript"
+  ]
+}
