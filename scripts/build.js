@@ -15,8 +15,7 @@ console.log('Building addon components for tests…');
 run('esbuild addon/index.ts --bundle --outfile=dist/addon-bundle.js --format=iife --global-name=AddonBundle --platform=browser --target=es2020');
 // Also copy test fixtures to dist
 mkdirSync('dist/test-fixtures', { recursive: true });
-cpSync('test-fixtures/addon-cards-setup.js', 'dist/test-fixtures/addon-cards-setup.js');
-cpSync('test-fixtures/addon-cards.html', 'dist/test-fixtures/addon-cards.html');
+if (existsSync('test-fixtures')) run('cp -r test-fixtures/* dist/test-fixtures/ || true');
 
 console.log('Copying gallery…');
 mkdirSync('dist/gallery', { recursive: true });
