@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GAS-PA - Google Apps Script Personal Assistant Dashboard">
+  <title>GAS-PA Dashboard</title>
+
+  <!-- Material Design 3 CSS Variables -->
+  <style id="design-tokens">
+    :root {
+      /* Color Palette - Material Design 3 */
+      --color-primary: #1976d2;
+      --color-primary-hover: #1565c0;
+      --color-primary-active: #0d47a1;
+      --color-primary-container: rgba(25, 118, 210, 0.12);
+      --color-text-on-primary: #ffffff;
+
+      --color-success: #2e7d32;
+      --color-warning: #ed6c02;
+      --color-error: #d32f2f;
+      --color-info: #0288d1;
+
+      --color-surface: #ffffff;
+      --color-surface-variant: #f5f5f5;
+      --color-surface-container: #fafafa;
+
+      --color-text-primary: rgba(0, 0, 0, 0.87);
+      --color-text-secondary: rgba(0, 0, 0, 0.6);
+      --color-text-disabled: rgba(0, 0, 0, 0.38);
+
+      --color-border: rgba(0, 0, 0, 0.12);
+      --color-border-subtle: rgba(0, 0, 0, 0.06);
+      --color-border-strong: rgba(0, 0, 0, 0.24);
+
+      /* Spacing System */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+
+      /* Typography */
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
+      --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-3xl: 2rem;
+
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Border Radius */
+      --radius-xs: 2px;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 9999px;
+
+      /* Transitions */
+      --transition-fast: 150ms ease;
+      --transition-base: 250ms ease;
+      --transition-slow: 350ms ease;
+
+      /* Elevations */
+      --elevation-e0: none;
+      --elevation-e1: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
+      --elevation-e2: 0 3px 6px 0 rgba(0, 0, 0, 0.16), 0 3px 6px 0 rgba(0, 0, 0, 0.23);
+      --elevation-e3: 0 10px 20px 0 rgba(0, 0, 0, 0.19), 0 6px 6px 0 rgba(0, 0, 0, 0.23);
+      --elevation-e4: 0 14px 28px 0 rgba(0, 0, 0, 0.25), 0 10px 10px 0 rgba(0, 0, 0, 0.22);
+      --elevation-e5: 0 19px 38px 0 rgba(0, 0, 0, 0.30), 0 15px 12px 0 rgba(0, 0, 0, 0.22);
+
+      /* Z-index layers */
+      --z-base: 0;
+      --z-dropdown: 100;
+      --z-sticky: 200;
+      --z-modal: 300;
+      --z-tooltip: 400;
+      --z-notification: 500;
+
+      /* Focus Ring */
+      --focus-ring: 0 0 0 2px var(--color-primary-container), 0 0 0 4px var(--color-primary);
+    }
+
+    /* Dark Theme */
+    [data-theme="dark"] {
+      --color-primary: #90caf9;
+      --color-primary-hover: #64b5f6;
+      --color-primary-active: #42a5f5;
+      --color-primary-container: rgba(144, 202, 249, 0.16);
+      --color-text-on-primary: #000000;
+
+      --color-success: #66bb6a;
+      --color-warning: #ffa726;
+      --color-error: #ef5350;
+      --color-info: #29b6f6;
+
+      --color-surface: #121212;
+      --color-surface-variant: #1e1e1e;
+      --color-surface-container: #2a2a2a;
+
+      --color-text-primary: rgba(255, 255, 255, 0.87);
+      --color-text-secondary: rgba(255, 255, 255, 0.6);
+      --color-text-disabled: rgba(255, 255, 255, 0.38);
+
+      --color-border: rgba(255, 255, 255, 0.12);
+      --color-border-subtle: rgba(255, 255, 255, 0.06);
+      --color-border-strong: rgba(255, 255, 255, 0.24);
+    }
+
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Utility Classes */
+    .container {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-md);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 calc(var(--spacing-sm) * -1);
+    }
+
+    .row.col-center {
+      align-items: center;
+    }
+
+    .row.gap-sm { gap: var(--spacing-sm); }
+    .row.gap-md { gap: var(--spacing-md); }
+    .row.gap-lg { gap: var(--spacing-lg); }
+
+    .col { flex: 1; padding: 0 var(--spacing-sm); }
+    .col-auto { flex: 0 0 auto; padding: 0 var(--spacing-sm); }
+    .col-12 { flex: 0 0 100%; max-width: 100%; }
+
+    @media (min-width: 640px) {
+      .col-sm-6 { flex: 0 0 50%; max-width: 50%; }
+    }
+
+    @media (min-width: 1024px) {
+      .col-lg-3 { flex: 0 0 25%; max-width: 25%; }
+    }
+
+    /* Loading Screen */
+    #app-loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-surface);
+      z-index: 9999;
+      transition: opacity var(--transition-base);
+    }
+
+    #app-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: var(--spacing-lg);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .loading-text {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .loading-bar {
+      width: 200px;
+      height: 4px;
+      background: var(--color-surface-container);
+      border-radius: var(--radius-xs);
+      overflow: hidden;
+    }
+
+    .loading-progress {
+      height: 100%;
+      background: var(--color-primary);
+      animation: loading 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(0.95); }
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0); }
+      100% { transform: translateX(100%); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="app-loading">
+    <svg class="loading-logo" viewBox="0 0 64 64" fill="currentColor">
+      <path d="M32 4L4 20v24l28 16 28-16V20L32 4zm0 8l20 11.4v17.2L32 52 12 40.6V23.4L32 12z" fill="var(--color-primary)"/>
+      <path d="M32 20l-12 6.8v13.6l12 6.8 12-6.8V26.8L32 20z" fill="var(--color-primary)" opacity="0.6"/>
+    </svg>
+    <div class="loading-text">Loading GAS-PA Dashboard...</div>
+    <div class="loading-bar">
+      <div class="loading-progress"></div>
+    </div>
+  </div>
+
+  <!-- Main App Container -->
+  <div id="app"></div>
+
+  <!-- Application Scripts -->
+  <script type="module">
+    // Import the main app module
+    import { createApp } from './app.js';
+
+    // Initialize the app when DOM is ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Get app container
+        const container = document.getElementById('app');
+
+        // Create mock user data (replace with actual auth)
+        const user = {
+          name: 'John Doe',
+          email: 'john.doe@example.com'
+        };
+
+        // Initialize the app
+        const app = createApp({
+          container,
+          user,
+          apiEndpoint: window.location.origin + '/api'
+        });
+
+        // Hide loading screen
+        setTimeout(() => {
+          const loading = document.getElementById('app-loading');
+          loading.classList.add('hidden');
+          setTimeout(() => loading.remove(), 250);
+        }, 500);
+
+        // Handle cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+          app.destroy();
+        });
+
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        document.getElementById('app').innerHTML = `
+          <div style="text-align: center; padding: 48px; color: var(--color-error);">
+            <h2>Failed to Load Dashboard</h2>
+            <p>Please refresh the page or contact support.</p>
+            <pre style="margin-top: 24px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto; padding: 16px; background: var(--color-surface-container); border-radius: 8px; font-size: 12px;">${error.stack || error.message}</pre>
+          </div>
+        `;
+      }
+    });
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + K for search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+
+      // Escape to close modals/overlays
+      if (e.key === 'Escape') {
+        // Handle escape key actions
+        const activeModal = document.querySelector('.modal.active');
+        if (activeModal) {
+          activeModal.classList.remove('active');
+        }
+      }
+    });
+
+    // Theme persistence
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.dataset.theme = savedTheme;
+
+    // Detect system theme preference
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.dataset.theme = mediaQuery.matches ? 'dark' : 'light';
+    }
+
+    mediaQuery.addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        document.documentElement.dataset.theme = e.matches ? 'dark' : 'light';
+      }
+    });
+  </script>
+
+  <!-- Fallback for non-module browsers -->
+  <noscript>
+    <div style="text-align: center; padding: 48px;">
+      <h2>JavaScript Required</h2>
+      <p>Please enable JavaScript to use the GAS-PA Dashboard.</p>
+    </div>
+  </noscript>
+</body>
+</html>

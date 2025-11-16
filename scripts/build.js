@@ -1,88 +1,29 @@
-#!/usr/bin/env node
+// scripts/build.js (CommonJS, safe on Node 24.x)
+const { execSync } = require('node:child_process');
+const { mkdirSync, cpSync, existsSync } = require('node:fs');
+const { join } = require('node:path');
 
-const esbuild = require('esbuild');
-const fs = require('fs');
-const path = require('path');
-
-// Clean dist directory
-const distDir = path.join(__dirname, '..', 'dist');
-if (fs.existsSync(distDir)) {
-  fs.rmSync(distDir, { recursive: true });
+function run(cmd) {
+  execSync(cmd, { stdio: 'inherit', shell: true });
 }
-fs.mkdirSync(distDir, { recursive: true });
 
-// Bundle the TypeScript code
-esbuild.build({
-  entryPoints: ['src/main-phase2.ts'],
-  bundle: true,
-  outfile: 'dist/Code.js',
-  platform: 'neutral', // Don't assume node or browser
-  format: 'iife',      // Immediately Invoked Function Expression
-  target: 'es2019',
-  logLevel: 'info',
-  banner: {
-    js: '// Google Apps Script Bundle\n// Auto-generated - do not edit directly\nvar global = this;\n',
-  },
-  footer: {
-    js: `
-// Export Phase 1 functions to global scope
-function simpleTest() { return global.simpleTest(); }
-function authorizeScript() { return global.authorizeScript(); }
-function cleanupProperties() { return global.cleanupProperties(); }
-function setup() { return global.setup(); }
-function testEmailProcessing() { return global.testEmailProcessing(); }
-function testDailySummary() { return global.testDailySummary(); }
-function processEmailsPeriodically() { return global.processEmailsPeriodically(); }
-function sendDailySummary() { return global.sendDailySummary(); }
-function sendWeeklySummary() { return global.sendWeeklySummary(); }
-function cleanupOldData() { return global.cleanupOldData(); }
-function getConfiguration() { return global.getConfiguration(); }
-function updateConfiguration(key, value) { return global.updateConfiguration(key, value); }
-function getStatistics() { return global.getStatistics(); }
-function reprocessEmails(query) { return global.reprocessEmails(query); }
-function exportConfiguration() { return global.exportConfiguration(); }
+console.log('Building UI bundle…');
+run('esbuild src/ui/main.ts --bundle --format=iife --outfile=dist/UI.js --platform=browser --target=es2020');
 
-// Export Phase 2 functions to global scope
-function setupPhase2() { return global.setupPhase2(); }
-function setOpenAIKey(apiKey) { return global.setOpenAIKey(apiKey); }
-function testPhase2Components() { return global.testPhase2Components(); }
-function testClassification() { return global.testClassification(); }
-function testDraftGeneration() { return global.testDraftGeneration(); }
-function getPhase2Status() { return global.getPhase2Status(); }
-function exportPhase2Config() { return global.exportPhase2Config(); }
-function importPhase2Config(jsonString) { return global.importPhase2Config(jsonString); }
+console.log('Building addon components for tests…');
+// Bundle addon code for browser tests (IIFE format for direct script loading)
+run('esbuild addon/index.ts --bundle --outfile=dist/addon-bundle.js --format=iife --global-name=AddonBundle --platform=browser --target=es2020');
+// Also copy test fixtures to dist
+mkdirSync('dist/test-fixtures', { recursive: true });
+cpSync('test-fixtures/addon-cards-setup.js', 'dist/test-fixtures/addon-cards-setup.js');
+cpSync('test-fixtures/addon-cards.html', 'dist/test-fixtures/addon-cards.html');
 
-// Export Classification Engine test functions
-function testClassificationEngine() { return global.testClassificationEngine(); }
-function testVIPManagement() { return global.testVIPManagement(); }
-function testRulesEngine() { return global.testRulesEngine(); }
-function testLearningSystem() { return global.testLearningSystem(); }
-function testClassificationFeedback() { return global.testClassificationFeedback(); }
-function runAllClassificationTests() { return global.runAllClassificationTests(); }
+console.log('Copying gallery…');
+mkdirSync('dist/gallery', { recursive: true });
+if (existsSync('src/ui/gallery')) run('cp -r src/ui/gallery/* dist/gallery/ || true');
 
-// Export Follow-up Queue test functions
-function testQueueManagement() { return global.testQueueManagement(); }
-function testSnoozeOperations() { return global.testSnoozeOperations(); }
-function testSLATracking() { return global.testSLATracking(); }
-function testClassificationIntegration() { return global.testClassificationIntegration(); }
-function testQueueStatistics() { return global.testQueueStatistics(); }
-function runAllQueueTests() { return global.runAllQueueTests(); }
-function debugQueueDatabase() { return global.debugQueueDatabase(); }
+console.log('Copying appsscript.json…');
+if (existsSync('appsscript.json')) cpSync('appsscript.json', 'dist/appsscript.json');
 
-// Flush logs function for trigger
-function flushLogs() { return global.LoggerService.flush(); }
-`,
-  },
-}).then(() => {
-  console.log('✓ Build complete: dist/Code.js');
+console.log('✓ Build complete');
 
-  // Copy appsscript.json to dist if it exists
-  const appsScriptPath = path.join(__dirname, '..', 'appsscript.json');
-  if (fs.existsSync(appsScriptPath)) {
-    fs.copyFileSync(appsScriptPath, path.join(distDir, 'appsscript.json'));
-    console.log('✓ Copied: appsscript.json');
-  }
-}).catch((error) => {
-  console.error('Build failed:', error);
-  process.exit(1);
-});

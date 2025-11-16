@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Module Loading</title>
+</head>
+<body>
+    <div id="result"></div>
+    <script src="./addon-cards-setup.js"></script>
+    <script type="module">
+        console.log('Starting module load test...');
+
+        try {
+            const componentsModule = await import('../addon/components.js');
+            console.log('Components module loaded:', componentsModule);
+            window.addonComponents = componentsModule;
+
+            const addonModule = await import('../addon/addon.js');
+            console.log('Addon module loaded:', addonModule);
+            window.addonFunctions = addonModule;
+
+            document.getElementById('result').textContent = 'Modules loaded successfully!';
+            console.log('window.addonComponents:', window.addonComponents);
+            console.log('window.addonFunctions:', window.addonFunctions);
+        } catch (error) {
+            console.error('Module load error:', error);
+            document.getElementById('result').textContent = 'Error: ' + error.message;
+        }
+    </script>
+</body>
+</html>

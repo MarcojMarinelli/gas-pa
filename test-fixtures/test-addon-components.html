@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Addon Components</title>
+</head>
+<body>
+    <div id="test-output"></div>
+
+    <script type="module">
+        // Mock the jest.fn() for testing
+        window.jest = {
+            fn: () => {
+                const mockFn = function(...args) {
+                    mockFn.mock.calls.push(args);
+                    if (mockFn.mockReturnValue !== undefined) {
+                        return mockFn.mockReturnValue;
+                    }
+                    if (mockFn.mockReturnThis) {
+                        return this;
+                    }
+                    return undefined;
+                };
+                mockFn.mock = { calls: [] };
+                mockFn.mockReturnThis = () => {
+                    mockFn.mockReturnThis = true;
+                    return mockFn;
+                };
+                mockFn.mockReturnValue = (value) => {
+                    mockFn.mockReturnValue = value;
+                    return mockFn;
+                };
+                return mockFn;
+            }
+        };
+
+        // Test the createKeyValue function
+        import('../../addon/components.js').then(module => {
+            const { createKeyValue } = module;
+
+            // Mock CardService
+            window.CardService = {
+                newKeyValue: () => ({
+                    setContent: jest.fn().mockReturnThis(),
+                    setTopLabel: jest.fn().mockReturnThis(),
+                    setBottomLabel: jest.fn().mockReturnThis(),
+                    setIcon: jest.fn().mockReturnThis(),
+                    setButton: jest.fn().mockReturnThis(),
+                    setMultiline: jest.fn().mockReturnThis(),
+                    setOnClickAction: jest.fn().mockReturnThis()
+                }),
+                Icon: {
+                    INBOX: 'INBOX'
+                }
+            };
+
+            // Test the function
+            const longText = 'This is a very long text that should be truncated to a single line with ellipsis at the end when displayed in the KeyValue widget to ensure proper display';
+
+            const keyValue = createKeyValue({
+                content: longText,
+                topLabel: 'Subject',
+                truncate: 1
+            });
+
+            // Check the results
+            const mockSetContent = keyValue.setContent;
+            const truncatedContent = mockSetContent.mock.calls[0][0];
+
+            const output = document.getElementById('test-output');
+            output.innerHTML = `
+                <h3>Test Results</h3>
+                <p>Truncated length: ${truncatedContent.length}</p>
+                <p>Should be <= 83: ${truncatedContent.length <= 83}</p>
+                <p>Contains ellipsis: ${truncatedContent.includes('...')}</p>
+                <p>Content: ${truncatedContent}</p>
+            `;
+
+            console.log('Test results:', {
+                truncatedLength: truncatedContent.length,
+                shouldBeUnder83: truncatedContent.length <= 83,
+                hasEllipsis: truncatedContent.includes('...'),
+                content: truncatedContent
+            });
+        }).catch(error => {
+            console.error('Import error:', error);
+            document.getElementById('test-output').innerHTML = `<p>Error: ${error.message}</p>`;
+        });
+    </script>
+</body>
+</html>

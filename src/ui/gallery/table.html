@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table Component Gallery - GAS-PA UI</title>
+
+  <!-- Load CSS -->
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/grid.css">
+  <link rel="stylesheet" href="../styles/components.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: var(--space-4);
+      background: var(--color-surface-0);
+      color: var(--color-text-primary);
+      font-family: var(--font-family);
+    }
+
+    .gallery-header {
+      margin-bottom: var(--space-8);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .gallery-title {
+      font-size: var(--font-size-7);
+      font-weight: var(--font-weight-semibold);
+      margin: 0;
+      margin-bottom: var(--space-2);
+    }
+
+    .gallery-description {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-2);
+    }
+
+    .demo-section {
+      margin-bottom: var(--space-12);
+    }
+
+    .demo-title {
+      font-size: var(--font-size-4);
+      font-weight: var(--font-weight-medium);
+      margin-bottom: var(--space-3);
+    }
+
+    .demo-controls {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      padding: var(--space-3);
+      background: var(--color-surface-1);
+      border-radius: var(--radius-2);
+    }
+
+    .demo-container {
+      margin-bottom: var(--space-6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2);
+      overflow: hidden;
+    }
+
+    .code-block {
+      background: var(--color-surface-2);
+      padding: var(--space-3);
+      border-radius: var(--radius-1);
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+      font-size: var(--font-size-1);
+      margin-top: var(--space-4);
+      overflow-x: auto;
+    }
+
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .stat-card {
+      padding: var(--space-3);
+      background: var(--color-surface-1);
+      border-radius: var(--radius-2);
+    }
+
+    .stat-label {
+      font-size: var(--font-size-1);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .stat-value {
+      font-size: var(--font-size-4);
+      font-weight: var(--font-weight-semibold);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="gallery-header">
+      <h1 class="gallery-title">Table Component Gallery</h1>
+      <p class="gallery-description">
+        Interactive demos of the Table component with virtual scrolling, sticky features, and keyboard navigation
+      </p>
+    </header>
+
+    <!-- Demo 1: Basic Table -->
+    <section class="demo-section">
+      <h2 class="demo-title">1. Basic Table</h2>
+      <div class="demo-container" id="demo1"></div>
+      <pre class="code-block">const table = new Table('#demo1', {
+  columns: [
+    { id: 'name', header: 'Name' },
+    { id: 'email', header: 'Email' },
+    { id: 'role', header: 'Role' },
+    { id: 'status', header: 'Status' }
+  ],
+  rows: mockData
+});</pre>
+    </section>
+
+    <!-- Demo 2: Sticky Header & First Column -->
+    <section class="demo-section">
+      <h2 class="demo-title">2. Sticky Header & First Column</h2>
+      <div class="demo-container" id="demo2" style="height: 400px;"></div>
+      <pre class="code-block">const table = new Table('#demo2', {
+  columns: [
+    { id: 'id', header: 'ID', width: '80px', sticky: true },
+    { id: 'name', header: 'Name' },
+    // ... more columns
+  ],
+  rows: mockData,
+  height: 400,
+  stickyHeader: true,
+  stickyFirstColumn: true
+});</pre>
+    </section>
+
+    <!-- Demo 3: Virtual Scrolling (200+ rows) -->
+    <section class="demo-section">
+      <h2 class="demo-title">3. Virtual Scrolling Performance Test</h2>
+      <div class="stats-panel">
+        <div class="stat-card">
+          <div class="stat-label">Total Rows</div>
+          <div class="stat-value" id="total-rows">1000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Visible Rows</div>
+          <div class="stat-value" id="visible-rows">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Render Time</div>
+          <div class="stat-value" id="render-time">0ms</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Memory Usage</div>
+          <div class="stat-value" id="memory-usage">0MB</div>
+        </div>
+      </div>
+      <div class="demo-controls">
+        <button class="button button--primary" onclick="loadMoreRows(500)">Add 500 Rows</button>
+        <button class="button button--secondary" onclick="loadMoreRows(1000)">Add 1000 Rows</button>
+        <button class="button button--secondary" onclick="scrollToMiddle()">Scroll to Middle</button>
+        <button class="button button--secondary" onclick="scrollToEnd()">Scroll to End</button>
+        <button class="button button--danger" onclick="clearRows()">Clear All</button>
+      </div>
+      <div class="demo-container" id="demo3" style="height: 500px;"></div>
+    </section>
+
+    <!-- Demo 4: Selection & Bulk Actions -->
+    <section class="demo-section">
+      <h2 class="demo-title">4. Selection & Bulk Actions</h2>
+      <div class="demo-controls">
+        <button class="button button--secondary" onclick="selectAllRows()">Select All</button>
+        <button class="button button--secondary" onclick="selectRandomRows()">Select Random</button>
+        <button class="button button--secondary" onclick="clearSelection()">Clear Selection</button>
+        <label class="checkbox-label">
+          <input type="checkbox" id="multiselect" checked onchange="toggleMultiSelect(this.checked)">
+          Multi-select enabled
+        </label>
+      </div>
+      <div class="demo-container" id="demo4" style="height: 400px;"></div>
+    </section>
+
+    <!-- Demo 5: Sortable Columns -->
+    <section class="demo-section">
+      <h2 class="demo-title">5. Sortable Columns</h2>
+      <div class="demo-container" id="demo5"></div>
+    </section>
+
+    <!-- Demo 6: Row Actions -->
+    <section class="demo-section">
+      <h2 class="demo-title">6. Row Actions</h2>
+      <div class="demo-container" id="demo6"></div>
+    </section>
+
+    <!-- Demo 7: Density Modes -->
+    <section class="demo-section">
+      <h2 class="demo-title">7. Density Modes</h2>
+      <div class="demo-controls">
+        <button class="button button--secondary" onclick="setDensity('compact')">Compact (40px)</button>
+        <button class="button button--secondary" onclick="setDensity('comfortable')">Comfortable (48px)</button>
+        <button class="button button--secondary" onclick="measurePerformance()">Measure Performance</button>
+      </div>
+      <div class="demo-container" id="demo7" style="height: 400px;"></div>
+    </section>
+
+    <!-- Demo 8: Keyboard Navigation -->
+    <section class="demo-section">
+      <h2 class="demo-title">8. Keyboard Navigation</h2>
+      <p class="demo-description">
+        Focus the table and use: ↑↓ for rows, ←→ for cells, Space/Enter to select, Home/End for first/last row
+      </p>
+      <div class="demo-container" id="demo8"></div>
+    </section>
+
+    <!-- Demo 9: Loading & Empty States -->
+    <section class="demo-section">
+      <h2 class="demo-title">9. Loading & Empty States</h2>
+      <div class="demo-controls">
+        <button class="button button--secondary" onclick="showLoading()">Show Loading</button>
+        <button class="button button--secondary" onclick="showEmpty()">Show Empty</button>
+        <button class="button button--secondary" onclick="showData()">Show Data</button>
+      </div>
+      <div class="demo-container" id="demo9"></div>
+    </section>
+
+    <!-- Demo 10: Custom Renderers -->
+    <section class="demo-section">
+      <h2 class="demo-title">10. Custom Cell Renderers</h2>
+      <div class="demo-container" id="demo10"></div>
+    </section>
+  </div>
+
+  <script type="module">
+    // Import the Table component
+    import { Table, createTable } from '../components/Table.js';
+
+    // Generate mock data
+    function generateMockData(count) {
+      const roles = ['Admin', 'Editor', 'Viewer', 'Contributor'];
+      const statuses = ['Active', 'Inactive', 'Pending', 'Suspended'];
+      const departments = ['Engineering', 'Marketing', 'Sales', 'Support', 'Design'];
+
+      return Array.from({ length: count }, (_, i) => ({
+        id: `user-${i + 1}`,
+        data: {
+          id: i + 1,
+          name: `User ${i + 1}`,
+          email: `user${i + 1}@example.com`,
+          role: roles[i % roles.length],
+          status: statuses[i % statuses.length],
+          department: departments[i % departments.length],
+          joinDate: new Date(2020, 0, 1 + i).toLocaleDateString(),
+          lastActive: new Date(2024, 0, 1 + (i % 30)).toLocaleDateString(),
+          score: Math.floor(Math.random() * 100),
+          progress: Math.floor(Math.random() * 100)
+        }
+      }));
+    }
+
+    let mockData = generateMockData(50);
+    let tables = {};
+
+    // Demo 1: Basic Table
+    tables.demo1 = createTable('#demo1', {
+      columns: [
+        { id: 'name', header: 'Name', width: '200px' },
+        { id: 'email', header: 'Email', width: '250px' },
+        { id: 'role', header: 'Role', width: '120px' },
+        { id: 'status', header: 'Status', width: '120px' }
+      ],
+      rows: mockData.slice(0, 10)
+    });
+
+    // Demo 2: Sticky Header & First Column
+    tables.demo2 = createTable('#demo2', {
+      columns: [
+        { id: 'id', header: 'ID', width: '60px', sticky: true },
+        { id: 'name', header: 'Name', width: '150px' },
+        { id: 'email', header: 'Email', width: '200px' },
+        { id: 'department', header: 'Department', width: '120px' },
+        { id: 'role', header: 'Role', width: '100px' },
+        { id: 'status', header: 'Status', width: '100px' },
+        { id: 'joinDate', header: 'Join Date', width: '120px' },
+        { id: 'lastActive', header: 'Last Active', width: '120px' }
+      ],
+      rows: mockData.slice(0, 30),
+      height: 400,
+      stickyHeader: true,
+      stickyFirstColumn: true
+    });
+
+    // Demo 3: Virtual Scrolling (1000+ rows)
+    let largeDataset = generateMockData(1000);
+    tables.demo3 = createTable('#demo3', {
+      columns: [
+        { id: 'id', header: 'ID', width: '80px' },
+        { id: 'name', header: 'Name' },
+        { id: 'email', header: 'Email' },
+        { id: 'department', header: 'Department' },
+        { id: 'score', header: 'Score', align: 'right' }
+      ],
+      rows: largeDataset,
+      height: 500,
+      virtualScrollBuffer: 5
+    });
+
+    // Update stats
+    document.getElementById('visible-rows').textContent = '~15';
+
+    // Demo 4: Selection & Bulk Actions
+    tables.demo4 = createTable('#demo4', {
+      columns: [
+        { id: 'name', header: 'Name' },
+        { id: 'email', header: 'Email' },
+        { id: 'role', header: 'Role' },
+        { id: 'status', header: 'Status' }
+      ],
+      rows: mockData.slice(0, 50),
+      height: 400,
+      selectable: true,
+      multiSelect: true,
+      bulkActions: [
+        {
+          id: 'export',
+          label: 'Export',
+          handler: (rows) => {
+            console.log(`Exporting ${rows.length} rows`);
+            alert(`Exporting ${rows.length} selected rows`);
+          }
+        },
+        {
+          id: 'delete',
+          label: 'Delete',
+          variant: 'danger',
+          handler: (rows) => {
+            if (confirm(`Delete ${rows.length} rows?`)) {
+              console.log(`Deleting ${rows.length} rows`);
+            }
+          }
+        }
+      ],
+      onSelectionChange: (selected) => {
+        console.log(`${selected.length} rows selected`);
+      }
+    });
+
+    // Demo 5: Sortable Columns
+    tables.demo5 = createTable('#demo5', {
+      columns: [
+        { id: 'id', header: 'ID', width: '80px', sortable: true },
+        { id: 'name', header: 'Name', sortable: true },
+        { id: 'score', header: 'Score', align: 'right', sortable: true },
+        { id: 'joinDate', header: 'Join Date', sortable: true }
+      ],
+      rows: mockData.slice(0, 20),
+      onSort: (column, direction) => {
+        console.log(`Sorting by ${column} ${direction}`);
+        tables.demo5.sort(column, direction);
+      }
+    });
+
+    // Demo 6: Row Actions
+    const rowsWithActions = mockData.slice(0, 10).map(row => ({
+      ...row,
+      actions: [
+        {
+          id: 'edit',
+          label: 'Edit',
+          icon: '✏️',
+          handler: (r) => alert(`Edit ${r.data.name}`)
+        },
+        {
+          id: 'delete',
+          label: 'Delete',
+          icon: '🗑️',
+          handler: (r) => confirm(`Delete ${r.data.name}?`),
+          condition: (r) => r.data.status !== 'Active'
+        }
+      ]
+    }));
+
+    tables.demo6 = createTable('#demo6', {
+      columns: [
+        { id: 'name', header: 'Name' },
+        { id: 'email', header: 'Email' },
+        { id: 'status', header: 'Status' }
+      ],
+      rows: rowsWithActions
+    });
+
+    // Demo 7: Density Modes
+    tables.demo7 = createTable('#demo7', {
+      columns: [
+        { id: 'name', header: 'Name' },
+        { id: 'email', header: 'Email' },
+        { id: 'role', header: 'Role' },
+        { id: 'status', header: 'Status' }
+      ],
+      rows: mockData,
+      height: 400
+    });
+
+    // Demo 8: Keyboard Navigation
+    tables.demo8 = createTable('#demo8', {
+      columns: [
+        { id: 'name', header: 'Name' },
+        { id: 'email', header: 'Email' },
+        { id: 'role', header: 'Role' }
+      ],
+      rows: mockData.slice(0, 10),
+      selectable: true,
+      multiSelect: true,
+      keyboardNavigation: true,
+      ariaLabel: 'Users table with keyboard navigation'
+    });
+
+    // Demo 9: Loading & Empty States
+    tables.demo9 = createTable('#demo9', {
+      columns: [
+        { id: 'name', header: 'Name' },
+        { id: 'email', header: 'Email' }
+      ],
+      rows: [],
+      loading: true
+    });
+
+    // Demo 10: Custom Renderers
+    tables.demo10 = createTable('#demo10', {
+      columns: [
+        { id: 'name', header: 'Name' },
+        {
+          id: 'status',
+          header: 'Status',
+          render: (value) => {
+            const badge = document.createElement('span');
+            badge.className = `badge badge--${value === 'Active' ? 'success' : 'default'}`;
+            badge.textContent = value;
+            return badge;
+          }
+        },
+        {
+          id: 'progress',
+          header: 'Progress',
+          render: (value) => {
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.gap = 'var(--space-2)';
+
+            const bar = document.createElement('div');
+            bar.style.width = '100px';
+            bar.style.height = '4px';
+            bar.style.background = 'var(--color-surface-3)';
+            bar.style.borderRadius = 'var(--radius-1)';
+            bar.style.overflow = 'hidden';
+
+            const fill = document.createElement('div');
+            fill.style.width = `${value}%`;
+            fill.style.height = '100%';
+            fill.style.background = 'var(--color-primary)';
+            bar.appendChild(fill);
+
+            const label = document.createElement('span');
+            label.style.fontSize = 'var(--font-size-1)';
+            label.textContent = `${value}%`;
+
+            container.appendChild(bar);
+            container.appendChild(label);
+            return container;
+          }
+        }
+      ],
+      rows: mockData.slice(0, 10)
+    });
+
+    // Global functions for demo controls
+    window.tables = tables;
+
+    window.loadMoreRows = function(count) {
+      const startTime = performance.now();
+      const newRows = generateMockData(count);
+      largeDataset = [...largeDataset, ...newRows];
+      tables.demo3.setRows(largeDataset);
+
+      const endTime = performance.now();
+      document.getElementById('total-rows').textContent = largeDataset.length;
+      document.getElementById('render-time').textContent = `${Math.round(endTime - startTime)}ms`;
+    };
+
+    window.scrollToMiddle = function() {
+      const middleRow = largeDataset[Math.floor(largeDataset.length / 2)];
+      tables.demo3.scrollToRow(middleRow.id);
+    };
+
+    window.scrollToEnd = function() {
+      const lastRow = largeDataset[largeDataset.length - 1];
+      tables.demo3.scrollToRow(lastRow.id);
+    };
+
+    window.clearRows = function() {
+      largeDataset = [];
+      tables.demo3.setRows(largeDataset);
+      document.getElementById('total-rows').textContent = '0';
+    };
+
+    window.selectAllRows = function() {
+      const allIds = mockData.slice(0, 50).map(r => r.id);
+      tables.demo4.selectRows(allIds);
+    };
+
+    window.selectRandomRows = function() {
+      const randomIds = mockData
+        .slice(0, 50)
+        .filter(() => Math.random() > 0.5)
+        .map(r => r.id);
+      tables.demo4.selectRows(randomIds);
+    };
+
+    window.clearSelection = function() {
+      tables.demo4.selectRows([]);
+    };
+
+    window.toggleMultiSelect = function(enabled) {
+      tables.demo4.update({ multiSelect: enabled });
+    };
+
+    window.setDensity = function(density) {
+      document.documentElement.setAttribute('data-density', density);
+      tables.demo7.update({});  // Force re-render to apply new density
+    };
+
+    window.showLoading = function() {
+      tables.demo9.setLoading(true);
+    };
+
+    window.showEmpty = function() {
+      tables.demo9.setLoading(false);
+      tables.demo9.setRows([]);
+    };
+
+    window.showData = function() {
+      tables.demo9.setLoading(false);
+      tables.demo9.setRows(mockData.slice(0, 5));
+    };
+
+    window.measurePerformance = function() {
+      const iterations = 10;
+      const times = [];
+
+      for (let i = 0; i < iterations; i++) {
+        const start = performance.now();
+        tables.demo7.setRows(generateMockData(100));
+        times.push(performance.now() - start);
+      }
+
+      const avg = times.reduce((a, b) => a + b, 0) / times.length;
+      alert(`Average render time for 100 rows: ${avg.toFixed(2)}ms`);
+    };
+
+    // Observe memory usage (approximate)
+    if (performance.memory) {
+      setInterval(() => {
+        const mb = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+        document.getElementById('memory-usage').textContent = `${mb}MB`;
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

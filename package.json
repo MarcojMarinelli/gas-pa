@@ -5,21 +5,33 @@
   "author": "Marco",
   "license": "MIT",
   "scripts": {
-    "build": "node scripts/build.js",
+    "clean": "rimraf dist",
+    "build": "npm run clean && node scripts/build.js",
+    "serve:headless": "node scripts/serve-static.mjs",
     "watch": "node scripts/build.js --watch",
     "push": "npm run build && clasp push",
     "deploy": "npm run push && clasp deploy",
     "logs": "clasp logs --tail",
-    "test": "npm run build && clasp run testEmailProcessing",
+    "test": "playwright test",
+    "test:visual": "playwright test tests/visual",
+    "test:a11y": "playwright test tests/a11y",
+    "test:ci": "npm run test:visual && npm run test:a11y",
+    "snapshots": "playwright test tests/visual --update-snapshots",
+    "snapshots:update": "playwright test tests/visual --update-snapshots",
     "setup": "clasp run setup",
     "open": "clasp open",
     "pull": "clasp pull"
   },
   "devDependencies": {
     "@anthropic-ai/claude-code": "^2.0.36",
+    "@axe-core/playwright": "^4.11.0",
     "@google/clasp": "^2.4.2",
+    "@playwright/test": "^1.56.1",
     "@types/google-apps-script": "^1.0.0",
+    "axe-core": "^4.11.0",
     "esbuild": "^0.27.0",
+    "rimraf": "^6.1.0",
+    "serve-static": "^2.2.0",
     "typescript": "^5.0.0"
   },
   "keywords": [
@@ -31,3 +43,4 @@
     "typescript"
   ]
 }
+

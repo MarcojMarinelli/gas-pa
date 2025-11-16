@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gmail Add-on Cards Test Fixture</title>
+</head>
+<body>
+    <div id="test-container"></div>
+    <script src="./addon-cards-setup.js"></script>
+    <script src="../addon-bundle.js" onerror="console.error('Failed to load addon-bundle.js')"></script>
+    <script>
+        // Wait for script to load
+        if (typeof AddonBundle !== 'undefined') {
+            console.log('AddonBundle loaded successfully:', AddonBundle);
+            // Make bundled functions available globally
+            window.addonComponents = AddonBundle;
+            window.addonFunctions = AddonBundle;
+        } else {
+            console.error('AddonBundle is not defined');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Components Gallery - GAS-PA UI</title>
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <style>
+    body {
+      font-family: var(--font-family);
+      background: var(--color-surface-container);
+      color: var(--color-text-primary);
+      padding: var(--spacing-xl);
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-weight: var(--font-weight-medium);
+    }
+
+    .demo-section {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--elevation-e1);
+    }
+
+    .demo-section h2 {
+      margin-top: 0;
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-primary);
+    }
+
+    .demo-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    .btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition-fast);
+    }
+
+    .btn--primary {
+      background: var(--color-primary);
+      color: var(--color-text-on-primary);
+    }
+
+    .btn--primary:hover {
+      background: var(--color-primary-hover);
+    }
+
+    .btn--secondary {
+      background: var(--color-surface-container);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn--secondary:hover {
+      background: var(--color-surface-container-high);
+    }
+
+    .description {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .demo-content {
+      padding: var(--spacing-lg);
+    }
+
+    .demo-content h3 {
+      margin-top: 0;
+    }
+
+    .demo-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .form-group label {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: var(--spacing-sm);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      font-family: var(--font-family);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Overlay Components Gallery</h1>
+
+    <!-- Modal Demo -->
+    <div class="demo-section">
+      <h2>Modal Component</h2>
+      <p class="description">
+        Centered overlay dialogs with focus trap, backdrop, and multiple size options.
+        Press ESC to close or click the backdrop.
+      </p>
+      <div class="demo-controls">
+        <button class="btn btn--primary" id="modal-small">Small Modal</button>
+        <button class="btn btn--primary" id="modal-medium">Medium Modal</button>
+        <button class="btn btn--primary" id="modal-large">Large Modal</button>
+        <button class="btn btn--primary" id="modal-fullscreen">Fullscreen Modal</button>
+        <button class="btn btn--secondary" id="modal-confirm">Confirm Dialog</button>
+        <button class="btn btn--secondary" id="modal-alert">Alert Dialog</button>
+      </div>
+    </div>
+
+    <!-- Drawer Demo -->
+    <div class="demo-section">
+      <h2>Drawer Component</h2>
+      <p class="description">
+        Side panel overlays that slide in from different directions.
+        Includes focus trap and scroll lock. Press ESC to close.
+      </p>
+      <div class="demo-controls">
+        <button class="btn btn--primary" id="drawer-left">Left Drawer</button>
+        <button class="btn btn--primary" id="drawer-right">Right Drawer</button>
+        <button class="btn btn--primary" id="drawer-top">Top Drawer</button>
+        <button class="btn btn--primary" id="drawer-bottom">Bottom Drawer</button>
+      </div>
+    </div>
+
+    <!-- Toast Demo -->
+    <div class="demo-section">
+      <h2>Toast Component</h2>
+      <p class="description">
+        Non-blocking notification messages with aria-live support for screen readers.
+        Auto-dismisses after 4 seconds by default.
+      </p>
+      <div class="demo-controls">
+        <button class="btn btn--primary" id="toast-info">Info Toast</button>
+        <button class="btn btn--primary" id="toast-success">Success Toast</button>
+        <button class="btn btn--primary" id="toast-warning">Warning Toast</button>
+        <button class="btn btn--primary" id="toast-error">Error Toast</button>
+        <button class="btn btn--secondary" id="toast-promise">Promise Toast</button>
+        <button class="btn btn--secondary" id="toast-positions">Test Positions</button>
+      </div>
+    </div>
+
+    <!-- Accessibility Demo -->
+    <div class="demo-section">
+      <h2>Accessibility Features</h2>
+      <p class="description">
+        All overlay components include comprehensive accessibility features.
+      </p>
+      <ul>
+        <li>✓ Focus trap - keeps keyboard navigation within overlays</li>
+        <li>✓ Escape key handling - close overlays with ESC</li>
+        <li>✓ Return focus - restores focus to trigger element after close</li>
+        <li>✓ Background inert - makes background content non-interactive</li>
+        <li>✓ Scroll lock - prevents body scroll when overlay is open</li>
+        <li>✓ ARIA attributes - proper roles, labels, and live regions</li>
+        <li>✓ Screen reader support - announcements for all state changes</li>
+        <li>✓ Reduced motion support - respects prefers-reduced-motion</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    // Wait for UI bundle to load
+    import('/UI.js').then(UI => {
+      const { Modal, Drawer, toast, createModal, createDrawer, confirm, alert } = UI;
+
+      // Demo content generator
+      const createDemoContent = (title) => {
+        const div = document.createElement('div');
+        div.className = 'demo-content';
+        div.innerHTML = `
+          <h3>${title}</h3>
+          <p>This is a demo of the ${title.toLowerCase()} component with keyboard navigation support.</p>
+          <form class="demo-form" onsubmit="return false;">
+            <div class="form-group">
+              <label for="demo-name">Name</label>
+              <input type="text" id="demo-name" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+              <label for="demo-email">Email</label>
+              <input type="email" id="demo-email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+              <label for="demo-message">Message</label>
+              <textarea id="demo-message" rows="3" placeholder="Enter a message"></textarea>
+            </div>
+            <div style="display: flex; gap: var(--spacing-sm);">
+              <button type="button" class="btn btn--secondary">Cancel</button>
+              <button type="button" class="btn btn--primary">Submit</button>
+            </div>
+          </form>
+        `;
+        return div;
+      };
+
+      // Modal demos
+      document.getElementById('modal-small').addEventListener('click', () => {
+        const modal = createModal({
+          title: 'Small Modal',
+          size: 'small',
+          closeButton: true
+        });
+        modal.setContent(createDemoContent('Small Modal'));
+        modal.open();
+      });
+
+      document.getElementById('modal-medium').addEventListener('click', () => {
+        const modal = createModal({
+          title: 'Medium Modal',
+          size: 'medium',
+          closeButton: true
+        });
+        modal.setContent(createDemoContent('Medium Modal'));
+        modal.open();
+      });
+
+      document.getElementById('modal-large').addEventListener('click', () => {
+        const modal = createModal({
+          title: 'Large Modal',
+          size: 'large',
+          closeButton: true
+        });
+        modal.setContent(createDemoContent('Large Modal'));
+        modal.open();
+      });
+
+      document.getElementById('modal-fullscreen').addEventListener('click', () => {
+        const modal = createModal({
+          title: 'Fullscreen Modal',
+          size: 'fullscreen',
+          closeButton: true
+        });
+        modal.setContent(createDemoContent('Fullscreen Modal'));
+        modal.open();
+      });
+
+      document.getElementById('modal-confirm').addEventListener('click', async () => {
+        const result = await confirm({
+          title: 'Confirm Action',
+          message: 'Are you sure you want to proceed with this action?',
+          confirmText: 'Yes, proceed',
+          cancelText: 'Cancel'
+        });
+        toast.info(`User ${result ? 'confirmed' : 'cancelled'} the action`);
+      });
+
+      document.getElementById('modal-alert').addEventListener('click', async () => {
+        await alert({
+          title: 'Important Notice',
+          message: 'This is an important message that requires your attention.',
+          buttonText: 'Got it'
+        });
+        toast.info('Alert acknowledged');
+      });
+
+      // Drawer demos
+      document.getElementById('drawer-left').addEventListener('click', () => {
+        const drawer = createDrawer({
+          position: 'left',
+          ariaLabel: 'Left Drawer'
+        });
+        drawer.setContent(createDemoContent('Left Drawer'));
+        drawer.open();
+      });
+
+      document.getElementById('drawer-right').addEventListener('click', () => {
+        const drawer = createDrawer({
+          position: 'right',
+          ariaLabel: 'Right Drawer'
+        });
+        drawer.setContent(createDemoContent('Right Drawer'));
+        drawer.open();
+      });
+
+      document.getElementById('drawer-top').addEventListener('click', () => {
+        const drawer = createDrawer({
+          position: 'top',
+          height: '40vh',
+          ariaLabel: 'Top Drawer'
+        });
+        drawer.setContent(createDemoContent('Top Drawer'));
+        drawer.open();
+      });
+
+      document.getElementById('drawer-bottom').addEventListener('click', () => {
+        const drawer = createDrawer({
+          position: 'bottom',
+          height: '40vh',
+          ariaLabel: 'Bottom Drawer'
+        });
+        drawer.setContent(createDemoContent('Bottom Drawer'));
+        drawer.open();
+      });
+
+      // Toast demos
+      document.getElementById('toast-info').addEventListener('click', () => {
+        toast.info('This is an informational message');
+      });
+
+      document.getElementById('toast-success').addEventListener('click', () => {
+        toast.success('Operation completed successfully!');
+      });
+
+      document.getElementById('toast-warning').addEventListener('click', () => {
+        toast.warning('Please review your input before proceeding');
+      });
+
+      document.getElementById('toast-error').addEventListener('click', () => {
+        toast.error('An error occurred while processing your request');
+      });
+
+      document.getElementById('toast-promise').addEventListener('click', async () => {
+        // Simulate an async operation
+        const fakeAsyncOperation = () => new Promise((resolve, reject) => {
+          setTimeout(() => {
+            if (Math.random() > 0.5) {
+              resolve('Data loaded successfully');
+            } else {
+              reject(new Error('Failed to load data'));
+            }
+          }, 2000);
+        });
+
+        try {
+          await toast.promise(
+            fakeAsyncOperation(),
+            {
+              loading: 'Loading data...',
+              success: (data) => data,
+              error: (err) => err.message
+            }
+          );
+        } catch (err) {
+          // Error already shown by toast.promise
+        }
+      });
+
+      document.getElementById('toast-positions').addEventListener('click', () => {
+        const positions = [
+          'top-left', 'top-center', 'top-right',
+          'bottom-left', 'bottom-center', 'bottom-right'
+        ];
+
+        positions.forEach((position, index) => {
+          setTimeout(() => {
+            toast.info(`Toast at ${position}`, {
+              position,
+              duration: 3000
+            });
+          }, index * 500);
+        });
+      });
+
+      console.log('Overlay components gallery loaded successfully');
+    }).catch(err => {
+      console.error('Failed to load UI components:', err);
+    });
+  </script>
+</body>
+</html>

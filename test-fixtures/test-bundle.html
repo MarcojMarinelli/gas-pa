@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bundle</title>
+</head>
+<body>
+    <div id="output"></div>
+    <script src="./addon-cards-setup.js"></script>
+    <script src="./addon-bundle.js"></script>
+    <script>
+        console.log('AddonBundle:', AddonBundle);
+        console.log('AddonBundle keys:', Object.keys(AddonBundle));
+
+        const output = document.getElementById('output');
+        output.innerHTML = `
+            <h3>AddonBundle Contents</h3>
+            <p>Type: ${typeof AddonBundle}</p>
+            <p>Keys: ${Object.keys(AddonBundle).join(', ')}</p>
+            <p>Has createKeyValue: ${!!AddonBundle.createKeyValue}</p>
+        `;
+
+        // Make it available as window expects
+        window.addonComponents = AddonBundle;
+        window.addonFunctions = AddonBundle;
+    </script>
+</body>
+</html>

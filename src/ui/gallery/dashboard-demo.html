@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Demo - GAS-PA</title>
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/grid.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      background: var(--color-surface);
+      min-height: 100vh;
+    }
+
+    #dashboard-container {
+      min-height: 100vh;
+    }
+
+    /* Demo controls */
+    .demo-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      box-shadow: var(--elevation-e3);
+      z-index: var(--z-popover);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .demo-btn {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      transition: all var(--transition-fast);
+    }
+
+    .demo-btn:hover {
+      background: var(--color-surface-container);
+    }
+
+    .demo-btn:active {
+      background: var(--color-surface-container-high);
+    }
+  </style>
+</head>
+<body data-theme="light" data-density="comfortable">
+  <div id="dashboard-container"></div>
+
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="toggleTheme()">Toggle Theme</button>
+    <button class="demo-btn" onclick="toggleDensity()">Toggle Density</button>
+    <button class="demo-btn" onclick="updateData()">Update Data</button>
+    <button class="demo-btn" onclick="addQueueItems()">Add Queue Items</button>
+  </div>
+
+  <script src="../UI.js"></script>
+  <script>
+    let dashboard;
+    let currentTheme = 'light';
+    let currentDensity = 'comfortable';
+
+    // Initialize dashboard
+    function initDashboard() {
+      const container = document.getElementById('dashboard-container');
+
+      dashboard = UI.createDashboard({
+        container: container,
+        onRefresh: () => {
+          console.log('Refreshing dashboard...');
+          setTimeout(() => {
+            updateData();
+          }, 500);
+        },
+        onQueueItemClick: (item) => {
+          console.log('Queue item clicked:', item);
+          UI.toast.success(`Viewing email: ${item.subject}`);
+        }
+      });
+
+      // Load initial data
+      updateData();
+      addQueueItems();
+    }
+
+    // Generate random trend data
+    function generateTrend(baseValue, variance = 0.2, points = 10) {
+      const trend = [];
+      let current = baseValue;
+
+      for (let i = 0; i < points; i++) {
+        current += (Math.random() - 0.5) * baseValue * variance;
+        current = Math.max(0, current);
+        trend.push(Math.round(current));
+      }
+
+      return trend;
+    }
+
+    // Update dashboard with random data
+    function updateData() {
+      const totalEmails = Math.floor(Math.random() * 5000) + 2000;
+      const processedToday = Math.floor(Math.random() * 500) + 100;
+      const pendingActions = Math.floor(Math.random() * 50) + 5;
+      const avgTime = Math.random() * 10 + 2;
+
+      const metrics = {
+        totalEmails: totalEmails,
+        processedToday: processedToday,
+        pendingActions: pendingActions,
+        avgProcessingTime: avgTime,
+        emailTrends: generateTrend(totalEmails / 10),
+        processingTrends: generateTrend(processedToday / 10),
+        pendingTrends: generateTrend(pendingActions),
+        timeTrends: generateTrend(avgTime)
+      };
+
+      dashboard.updateMetrics(metrics);
+      UI.toast.info('Dashboard data updated');
+    }
+
+    // Add sample queue items
+    function addQueueItems() {
+      const senders = ['john.doe@example.com', 'jane.smith@company.org', 'support@service.net', 'noreply@newsletter.com'];
+      const subjects = [
+        'Meeting notes from yesterday',
+        'Q4 Budget Review',
+        'Project update - Phase 2',
+        'Important: Action required',
+        'Weekly status report',
+        'Customer feedback summary',
+        'New feature request',
+        'System maintenance notice'
+      ];
+      const priorities = ['high', 'medium', 'low'];
+
+      const items = [];
+      const count = Math.floor(Math.random() * 10) + 5;
+
+      for (let i = 0; i < count; i++) {
+        const hoursAgo = Math.floor(Math.random() * 72);
+        items.push({
+          id: `email-${Date.now()}-${i}`,
+          subject: subjects[Math.floor(Math.random() * subjects.length)],
+          from: senders[Math.floor(Math.random() * senders.length)],
+          date: new Date(Date.now() - hoursAgo * 60 * 60 * 1000),
+          priority: priorities[Math.floor(Math.random() * priorities.length)],
+          status: Math.random() > 0.7 ? 'processing' : 'pending'
+        });
+      }
+
+      dashboard.updateQueue(items);
+      UI.toast.success(`Added ${count} queue items`);
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.body.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('ui.theme', currentTheme);
+
+      // Update chart colors
+      UI.applyChartStyles();
+
+      UI.toast.info(`Switched to ${currentTheme} theme`);
+    }
+
+    // Density toggle
+    function toggleDensity() {
+      const densities = ['comfortable', 'compact', 'spacious'];
+      const currentIndex = densities.indexOf(currentDensity);
+      currentDensity = densities[(currentIndex + 1) % densities.length];
+      document.body.setAttribute('data-density', currentDensity);
+      localStorage.setItem('ui.density', currentDensity);
+
+      UI.toast.info(`Switched to ${currentDensity} density`);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Apply saved preferences
+      const savedTheme = localStorage.getItem('ui.theme') || 'light';
+      const savedDensity = localStorage.getItem('ui.density') || 'comfortable';
+
+      currentTheme = savedTheme;
+      currentDensity = savedDensity;
+
+      document.body.setAttribute('data-theme', currentTheme);
+      document.body.setAttribute('data-density', currentDensity);
+
+      // Initialize dashboard
+      initDashboard();
+    });
+  </script>
+</body>
+</html>

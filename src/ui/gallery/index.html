@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-density="comfortable">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>GAS-PA Gallery</title>
+    <style>
+      :root { --bg:#fff; --fg:#111; --muted:#666; }
+      [data-theme="dark"] { --bg:#111827; --fg:#f5f7fb; --muted:#a0aec0; }
+      body { margin:0; font:14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Liberation Sans", "DejaVu Sans", Arial, sans-serif; background:var(--bg); color:var(--fg); }
+      .container { max-width: 960px; margin: 24px auto; padding: 0 24px; }
+      .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:24px; }
+      .card { grid-column: span 6; background: rgba(127,127,127,.06); border:1px solid rgba(127,127,127,.15); border-radius:12px; padding:16px; }
+      h1 { margin: 0 0 8px; }
+      .muted { color: var(--muted); }
+      .row-compact [data-row] { padding:8px 12px; }
+      .row-comfortable [data-row] { padding:12px 16px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Component Gallery</h1>
+      <p class="muted">Scaffold for Playwright screenshots (headless).</p>
+
+      <div role="toolbar" aria-label="Theme and density controls">
+        <button id="light" type="button" aria-label="Light theme">Light</button>
+        <button id="dark" type="button" aria-label="Dark theme">Dark</button>
+        <button id="compact" type="button" aria-label="Compact density">Compact</button>
+        <button id="comfortable" type="button" aria-label="Comfortable density">Comfortable</button>
+      </div>
+
+      <div class="grid row-comfortable" id="grid" role="region" aria-label="Component examples">
+        <div class="card" data-row>
+          <h3>Buttons (placeholder)</h3>
+          <button type="button" aria-label="Primary button example">Primary</button>
+          <button type="button" disabled aria-disabled="true" aria-label="Disabled button example">Disabled</button>
+        </div>
+        <div class="card" data-row>
+          <h3>Inputs (placeholder)</h3>
+          <input type="text" placeholder="Type here" aria-label="Text input example" />
+        </div>
+        <div class="card" data-row>
+          <h3>Dashboard Demo</h3>
+          <p>Interactive dashboard with StatCards and micro-trends</p>
+          <a href="dashboard-demo.html" style="color: var(--fg);">Open Dashboard →</a>
+        </div>
+        <div class="card" data-row>
+          <h3>Components</h3>
+          <ul style="list-style: none; padding: 0; margin: 8px 0;">
+            <li>✓ Table with virtualization</li>
+            <li>✓ Modal & Drawer</li>
+            <li>✓ Toast notifications</li>
+            <li>✓ StatCards with trends</li>
+            <li>✓ Chart utilities</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Important: UI.js lives at the dist root. Root is /dist when served. -->
+    <script defer src="/UI.js"></script>
+    <script>
+      const root = document.documentElement;
+      document.getElementById('light').onclick = () => root.setAttribute('data-theme','light');
+      document.getElementById('dark').onclick = () => root.setAttribute('data-theme','dark');
+      const grid = document.getElementById('grid');
+      document.getElementById('compact').onclick = () => grid.classList.add('row-compact'), grid.classList.remove('row-comfortable');
+      document.getElementById('comfortable').onclick = () => grid.classList.add('row-comfortable'), grid.classList.remove('row-compact');
+    </script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table Selection Tests</title>
+    <link rel="stylesheet" href="../UI.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="test-container"></div>
+    <script src="../UI.js" onerror="console.error('Failed to load UI.js')"></script>
+    <script>
+        // Wait for script to load
+        if (typeof Table !== 'undefined') {
+            console.log('Table component loaded successfully');
+            // Make Table available globally for tests
+            window.Table = Table;
+        } else {
+            console.error('Table component not found in UI.js');
+        }
+    </script>
+</body>
+</html>
