@@ -1,0 +1,14 @@
+# Exclude browser-side code (embedded in HTML, not executed as .gs)
+# Paths are relative to rootDir (./dist) in .clasp.json
+UI.js
+UI.css
+
+# Exclude browser bundles - only deploy .html versions
+# GAS will try to execute .js files as server-side code, causing "document is not defined" errors
+ui-bundle.js
+ui-bundle.css
+app-bundle.js
+
+# Exclude test code from deployment
+addon-bundle.js
+test-fixtures/**

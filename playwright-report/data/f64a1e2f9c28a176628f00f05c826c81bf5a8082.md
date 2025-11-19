@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - heading "Overlay Components Gallery" [level=1] [ref=e3]
+  - generic [ref=e4]:
+    - heading "Modal Component" [level=2] [ref=e5]
+    - paragraph [ref=e6]: Centered overlay dialogs with focus trap, backdrop, and multiple size options. Press ESC to close or click the backdrop.
+    - generic [ref=e7]:
+      - button "Small Modal" [ref=e8] [cursor=pointer]
+      - button "Medium Modal" [ref=e9] [cursor=pointer]
+      - button "Large Modal" [ref=e10] [cursor=pointer]
+      - button "Fullscreen Modal" [ref=e11] [cursor=pointer]
+      - button "Confirm Dialog" [ref=e12] [cursor=pointer]
+      - button "Alert Dialog" [ref=e13] [cursor=pointer]
+  - generic [ref=e14]:
+    - heading "Drawer Component" [level=2] [ref=e15]
+    - paragraph [ref=e16]: Side panel overlays that slide in from different directions. Includes focus trap and scroll lock. Press ESC to close.
+    - generic [ref=e17]:
+      - button "Left Drawer" [active] [ref=e18] [cursor=pointer]
+      - button "Right Drawer" [ref=e19] [cursor=pointer]
+      - button "Top Drawer" [ref=e20] [cursor=pointer]
+      - button "Bottom Drawer" [ref=e21] [cursor=pointer]
+  - generic [ref=e22]:
+    - heading "Toast Component" [level=2] [ref=e23]
+    - paragraph [ref=e24]: Non-blocking notification messages with aria-live support for screen readers. Auto-dismisses after 4 seconds by default.
+    - generic [ref=e25]:
+      - button "Info Toast" [ref=e26] [cursor=pointer]
+      - button "Success Toast" [ref=e27] [cursor=pointer]
+      - button "Warning Toast" [ref=e28] [cursor=pointer]
+      - button "Error Toast" [ref=e29] [cursor=pointer]
+      - button "Promise Toast" [ref=e30] [cursor=pointer]
+      - button "Test Positions" [ref=e31] [cursor=pointer]
+  - generic [ref=e32]:
+    - heading "Accessibility Features" [level=2] [ref=e33]
+    - paragraph [ref=e34]: All overlay components include comprehensive accessibility features.
+    - list [ref=e35]:
+      - listitem [ref=e36]: ✓ Focus trap - keeps keyboard navigation within overlays
+      - listitem [ref=e37]: ✓ Escape key handling - close overlays with ESC
+      - listitem [ref=e38]: ✓ Return focus - restores focus to trigger element after close
+      - listitem [ref=e39]: ✓ Background inert - makes background content non-interactive
+      - listitem [ref=e40]: ✓ Scroll lock - prevents body scroll when overlay is open
+      - listitem [ref=e41]: ✓ ARIA attributes - proper roles, labels, and live regions
+      - listitem [ref=e42]: ✓ Screen reader support - announcements for all state changes
+      - listitem [ref=e43]: ✓ Reduced motion support - respects prefers-reduced-motion
+```

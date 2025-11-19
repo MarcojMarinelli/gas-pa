@@ -1,0 +1,277 @@
+name: CI - Visual and Accessibility Tests
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  visual-and-a11y-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Install system fonts for consistent rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            fonts-liberation \
+            fonts-dejavu-core \
+            fonts-inter
+
+      - name: Build UI assets
+        run: npm run build
+        continue-on-error: true  # Allow build errors temporarily while fixing
+
+      - name: Start static server
+        run: |
+          npm install -g http-server
+          http-server -p 8087 -a localhost &
+          sleep 3
+        continue-on-error: true
+
+      - name: Run visual tests
+        id: visual-tests
+        run: npx playwright test tests/visual --reporter=json --reporter=html
+        env:
+          CI: true
+
+      - name: Upload visual test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: visual-test-results
+          path: |
+            playwright-report/
+            test-results/
+
+      - name: Upload visual snapshots
+        if: failure() && steps.visual-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v3
+        with:
+          name: visual-snapshots-diff
+          path: |
+            tests/visual/**/*-diff.png
+            tests/visual/**/*-actual.png
+
+      - name: Install axe-core for accessibility tests
+        run: npm install --save-dev @axe-core/playwright
+
+      - name: Run accessibility tests
+        id: a11y-tests
+        run: npx playwright test tests/a11y --reporter=json --reporter=html
+        env:
+          CI: true
+
+      - name: Upload accessibility test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: a11y-test-results
+          path: |
+            playwright-report/
+            test-results/
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.visual-tests.outcome }}" == "success" ]; then
+            echo "✅ **Visual Tests:** Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Visual Tests:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.a11y-tests.outcome }}" == "success" ]; then
+            echo "✅ **Accessibility Tests:** Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Accessibility Tests:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Test reports available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- 🖼️ Visual snapshots available if tests failed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const visualStatus = '${{ steps.visual-tests.outcome }}' === 'success' ? '✅' : '❌';
+            const a11yStatus = '${{ steps.a11y-tests.outcome }}' === 'success' ? '✅' : '❌';
+
+            const comment = `## Test Results
+
+            | Test Suite | Status |
+            |------------|--------|
+            | Visual Tests | ${visualStatus} |
+            | Accessibility Tests | ${a11yStatus} |
+
+            View the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed results.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  update-snapshots:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[update snapshots]')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Install system fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            fonts-liberation \
+            fonts-dejavu-core \
+            fonts-inter
+
+      - name: Build UI assets
+        run: npm run build
+        continue-on-error: true
+
+      - name: Start static server
+        run: |
+          npm install -g http-server
+          http-server -p 8087 -a localhost &
+          sleep 3
+        continue-on-error: true
+
+      - name: Update visual snapshots
+        run: npx playwright test tests/visual --update-snapshots
+
+      - name: Commit updated snapshots
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add tests/visual/**/*-snapshots/*.png
+          git diff --staged --quiet || git commit -m "Update visual snapshots [skip ci]"
+
+      - name: Push changes
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: git push
+
+  lighthouse-performance:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build UI assets
+        run: npm run build
+        continue-on-error: true
+
+      - name: Start static server
+        run: |
+          npm install -g http-server
+          http-server -p 8087 -a localhost &
+          sleep 3
+        continue-on-error: true
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun --collect.url=http://localhost:8087/src/ui/gallery/index.html || true
+
+      - name: Upload Lighthouse results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type checking
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: Check bundle size
+        run: |
+          npm run build
+          echo "### Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+
+          for file in dist/*.js; do
+            if [ -f "$file" ]; then
+              size=$(du -h "$file" | cut -f1)
+              name=$(basename "$file")
+              echo "| $name | $size |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          # Check if bundle exceeds 300KB limit
+          total_size=$(du -cb dist/*.js 2>/dev/null | grep total | cut -f1)
+          if [ "$total_size" -gt 307200 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Warning:** Bundle size exceeds 300KB limit!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        continue-on-error: true

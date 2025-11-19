@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('UI.css'); ?>
+</head>
+<body>
+  <div class="container">
+    <h1>GAS-PA UI Components Demo</h1>
+
+    <h2>Email Classification Dashboard</h2>
+    <div id="dashboard"></div>
+
+    <h2>Email Table</h2>
+    <div id="email-table"></div>
+
+    <h2>Quick Actions</h2>
+    <div id="actions"></div>
+  </div>
+
+  <!-- Embed UI.js directly -->
+  <script>
+    <?!= include('UI.js'); ?>
+  </script>
+
+  <script>
+    // Initialize UI components once loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('GAS-PA UI Demo loaded');
+
+      // Example: Initialize table with sample data
+      if (typeof window.GasPA !== 'undefined') {
+        console.log('UI components available:', window.GasPA);
+        // Initialize your components here
+      }
+    });
+  </script>
+</body>
+</html>

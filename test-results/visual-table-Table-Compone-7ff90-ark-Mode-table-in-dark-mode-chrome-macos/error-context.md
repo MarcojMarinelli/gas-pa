@@ -1,0 +1,62 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - heading "Table Component Gallery" [level=1] [ref=e4]
+    - paragraph [ref=e5]: Interactive demos of the Table component with virtual scrolling, sticky features, and keyboard navigation
+  - generic [ref=e6]:
+    - heading "1. Basic Table" [level=2] [ref=e7]
+    - generic [ref=e9]: "const table = new Table('#demo1', { columns: [ { id: 'name', header: 'Name' }, { id: 'email', header: 'Email' }, { id: 'role', header: 'Role' }, { id: 'status', header: 'Status' } ], rows: mockData });"
+  - generic [ref=e10]:
+    - heading "2. Sticky Header & First Column" [level=2] [ref=e11]
+    - generic [ref=e13]: "const table = new Table('#demo2', { columns: [ { id: 'id', header: 'ID', width: '80px', sticky: true }, { id: 'name', header: 'Name' }, // ... more columns ], rows: mockData, height: 400, stickyHeader: true, stickyFirstColumn: true });"
+  - generic [ref=e14]:
+    - heading "3. Virtual Scrolling Performance Test" [level=2] [ref=e15]
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Total Rows
+        - generic [ref=e19]: "1000"
+      - generic [ref=e20]:
+        - generic [ref=e21]: Visible Rows
+        - generic [ref=e22]: "0"
+      - generic [ref=e23]:
+        - generic [ref=e24]: Render Time
+        - generic [ref=e25]: 0ms
+      - generic [ref=e26]:
+        - generic [ref=e27]: Memory Usage
+        - generic [ref=e28]: 0MB
+    - generic [ref=e29]:
+      - button "Add 500 Rows" [ref=e30]
+      - button "Add 1000 Rows" [ref=e31]
+      - button "Scroll to Middle" [ref=e32]
+      - button "Scroll to End" [ref=e33]
+      - button "Clear All" [ref=e34]
+  - generic [ref=e36]:
+    - heading "4. Selection & Bulk Actions" [level=2] [ref=e37]
+    - generic [ref=e38]:
+      - button "Select All" [ref=e39]
+      - button "Select Random" [ref=e40]
+      - button "Clear Selection" [ref=e41]
+      - generic [ref=e42]:
+        - checkbox "Multi-select enabled" [checked] [ref=e43]
+        - text: Multi-select enabled
+  - heading "5. Sortable Columns" [level=2] [ref=e46]
+  - heading "6. Row Actions" [level=2] [ref=e49]
+  - generic [ref=e51]:
+    - heading "7. Density Modes" [level=2] [ref=e52]
+    - generic [ref=e53]:
+      - button "Compact (40px)" [ref=e54]
+      - button "Comfortable (48px)" [ref=e55]
+      - button "Measure Performance" [ref=e56]
+  - generic [ref=e58]:
+    - heading "8. Keyboard Navigation" [level=2] [ref=e59]
+    - paragraph [ref=e60]: "Focus the table and use: ↑↓ for rows, ←→ for cells, Space/Enter to select, Home/End for first/last row"
+  - generic [ref=e62]:
+    - heading "9. Loading & Empty States" [level=2] [ref=e63]
+    - generic [ref=e64]:
+      - button "Show Loading" [ref=e65]
+      - button "Show Empty" [ref=e66]
+      - button "Show Data" [ref=e67]
+  - heading "10. Custom Cell Renderers" [level=2] [ref=e70]
+```

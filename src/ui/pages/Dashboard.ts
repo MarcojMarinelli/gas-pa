@@ -7,6 +7,7 @@
 import { StatCard, StatCardConfig } from '../components/StatCard';
 import { Table } from '../components/Table';
 import { applyChartStyles } from '../components/ChartStyle';
+import { QueueItem } from '../../types/shared-models';
 
 export interface DashboardConfig {
   container: HTMLElement;
@@ -23,15 +24,6 @@ export interface DashboardMetrics {
   processingTrends: number[];
   pendingTrends: number[];
   timeTrends: number[];
-}
-
-export interface QueueItem {
-  id: string;
-  subject: string;
-  from: string;
-  date: Date;
-  priority: 'high' | 'medium' | 'low';
-  status: 'pending' | 'processing' | 'completed';
 }
 
 export class Dashboard {
@@ -127,9 +119,12 @@ export class Dashboard {
   }
 
   private initializeStatCards(): void {
+    console.log('[Dashboard] Initializing stat cards...');
+    console.log('[Dashboard] Container element:', this.container);
+
     const configs: StatCardConfig[] = [
       {
-        container: document.getElementById('stat-total-emails')!,
+        container: this.container.querySelector('#stat-total-emails') as HTMLElement,
         title: 'Total Emails',
         value: '0',
         change: 0,
@@ -140,7 +135,7 @@ export class Dashboard {
         </svg>`
       },
       {
-        container: document.getElementById('stat-processed-today')!,
+        container: this.container.querySelector('#stat-processed-today') as HTMLElement,
         title: 'Processed Today',
         value: '0',
         change: 0,
@@ -151,7 +146,7 @@ export class Dashboard {
         </svg>`
       },
       {
-        container: document.getElementById('stat-pending-actions')!,
+        container: this.container.querySelector('#stat-pending-actions') as HTMLElement,
         title: 'Pending Actions',
         value: '0',
         change: 0,
@@ -162,7 +157,7 @@ export class Dashboard {
         </svg>`
       },
       {
-        container: document.getElementById('stat-avg-time')!,
+        container: this.container.querySelector('#stat-avg-time') as HTMLElement,
         title: 'Avg Processing',
         value: '0s',
         change: 0,
@@ -176,20 +171,41 @@ export class Dashboard {
       }
     ];
 
-    this.statCards = configs.map(config => new StatCard(config));
+    console.log('[Dashboard] Stat card containers found:', {
+      totalEmails: configs[0].container,
+      processedToday: configs[1].container,
+      pendingActions: configs[2].container,
+      avgTime: configs[3].container
+    });
+
+    // Filter out configs with null containers and create stat cards
+    this.statCards = configs
+      .filter(config => {
+        if (config.container === null) {
+          console.warn('[Dashboard] Null container found for:', config.title);
+          return false;
+        }
+        return true;
+      })
+      .map(config => new StatCard(config));
+
+    console.log('[Dashboard] Created stat cards:', this.statCards.length);
   }
 
   private initializeQueueTable(): void {
-    const container = document.getElementById('queue-table-container');
-    if (!container) return;
+    const container = this.container.querySelector('#queue-table-container') as HTMLElement;
+    if (!container) {
+      console.warn('Queue table container not found, skipping table initialization');
+      return;
+    }
 
     // Create table using the existing Table component
-    this.queueTable = new (window as any).Table({
-      container,
+    // Note: Table constructor expects (container, config) as separate parameters
+    this.queueTable = new Table(container, {
       columns: [
         {
           id: 'priority',
-          label: '',
+          header: '',
           width: '40px',
           render: (value: string) => {
             const colors = {
@@ -200,13 +216,13 @@ export class Dashboard {
             return `<span class="priority-indicator" style="background: ${colors[value as keyof typeof colors]}" title="${value} priority"></span>`;
           }
         },
-        { id: 'subject', label: 'Subject', sortable: true },
-        { id: 'from', label: 'From', sortable: true },
+        { id: 'subject', header: 'Subject', sortable: true },
+        { id: 'from', header: 'From', sortable: true },
         {
           id: 'date',
-          label: 'Date',
+          header: 'Date',
           sortable: true,
-          render: (value: Date) => {
+          render: (value: string) => {  // Changed from Date to string (ISO 8601)
             const date = new Date(value);
             const now = new Date();
             const diff = now.getTime() - date.getTime();
@@ -225,7 +241,7 @@ export class Dashboard {
         },
         {
           id: 'actions',
-          label: 'Actions',
+          header: 'Actions',
           width: '100px',
           render: (_, row: QueueItem) => {
             return `
@@ -239,15 +255,13 @@ export class Dashboard {
           }
         }
       ],
-      rows: [],
-      pageSize: 10,
-      sticky: true
+      rows: []
     });
   }
 
   private attachEventListeners(): void {
     // Refresh button
-    const refreshBtn = document.getElementById('refresh-dashboard');
+    const refreshBtn = this.container.querySelector('#refresh-dashboard');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => {
         this.refresh();
@@ -277,33 +291,52 @@ export class Dashboard {
   }
 
   public updateMetrics(metrics: DashboardMetrics): void {
+    console.log('[Dashboard] updateMetrics called', {
+      metricsReceived: metrics,
+      statCardsLength: this.statCards.length
+    });
+
     this.metrics = metrics;
 
     // Update stat cards
     if (this.statCards.length === 4) {
+      console.log('[Dashboard] Updating stat cards...');
+
+      console.log('[Dashboard] Updating card 0 (Total Emails):', {
+        value: metrics.totalEmails.toLocaleString(),
+        change: this.calculateChange(metrics.emailTrends),
+        trend: metrics.emailTrends
+      });
       this.statCards[0].update({
         value: metrics.totalEmails.toLocaleString(),
         change: this.calculateChange(metrics.emailTrends),
         trend: metrics.emailTrends
       });
 
+      console.log('[Dashboard] Updating card 1 (Processed Today):', metrics.processedToday.toLocaleString());
       this.statCards[1].update({
         value: metrics.processedToday.toLocaleString(),
         change: this.calculateChange(metrics.processingTrends),
         trend: metrics.processingTrends
       });
 
+      console.log('[Dashboard] Updating card 2 (Pending Actions):', metrics.pendingActions.toLocaleString());
       this.statCards[2].update({
         value: metrics.pendingActions.toLocaleString(),
         change: this.calculateChange(metrics.pendingTrends),
         trend: metrics.pendingTrends
       });
 
+      console.log('[Dashboard] Updating card 3 (Avg Processing):', metrics.avgProcessingTime.toFixed(1));
       this.statCards[3].update({
         value: metrics.avgProcessingTime.toFixed(1),
         change: this.calculateChange(metrics.timeTrends),
         trend: metrics.timeTrends
       });
+
+      console.log('[Dashboard] ✓ All stat cards updated');
+    } else {
+      console.warn('[Dashboard] Cannot update stat cards - expected 4 cards, found:', this.statCards.length);
     }
   }
 
@@ -311,14 +344,18 @@ export class Dashboard {
     this.queueItems = items;
 
     // Update queue count
-    const countBadge = document.getElementById('queue-count');
+    const countBadge = this.container.querySelector('#queue-count');
     if (countBadge) {
       countBadge.textContent = `${items.length} items`;
     }
 
-    // Update table
+    // Update table - Transform QueueItem[] to TableRow[]
     if (this.queueTable) {
-      this.queueTable.update({ rows: items });
+      const tableRows = items.map(item => ({
+        id: item.id,
+        data: item  // Wrap the QueueItem in the data property
+      }));
+      this.queueTable.update({ rows: tableRows });
     }
   }
 
@@ -332,7 +369,7 @@ export class Dashboard {
 
   public refresh(): void {
     // Add loading state
-    const refreshBtn = document.querySelector('#refresh-dashboard');
+    const refreshBtn = this.container.querySelector('#refresh-dashboard');
     if (refreshBtn) {
       refreshBtn.classList.add('loading');
       refreshBtn.setAttribute('aria-busy', 'true');

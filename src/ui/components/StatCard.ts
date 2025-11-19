@@ -228,21 +228,45 @@ export class StatCard {
   }
 
   public update(data: StatCardUpdateData): void {
+    console.log('[StatCard] update called', {
+      title: this.config.title,
+      data,
+      container: this.container
+    });
+
     // Update value
     if (data.value !== undefined) {
       const numberEl = this.container.querySelector('.stat-card-number');
+      console.log('[StatCard] Looking for .stat-card-number:', {
+        title: this.config.title,
+        numberEl,
+        containerHTML: this.container.innerHTML.substring(0, 200)
+      });
+
       if (numberEl) {
         const oldValue = numberEl.textContent;
         const newValue = this.formatValue(data.value);
 
+        console.log('[StatCard] Updating value:', {
+          title: this.config.title,
+          oldValue,
+          newValue
+        });
+
         if (oldValue !== newValue) {
-          // Animate the value change
-          numberEl.classList.add('updating');
-          setTimeout(() => {
-            numberEl.textContent = newValue;
-            numberEl.classList.remove('updating');
-          }, 150);
+          // Update immediately without animation delay
+          numberEl.textContent = newValue;
+          console.log('[StatCard] Value updated in DOM immediately:', {
+            title: this.config.title,
+            newValue,
+            actualDOMValue: numberEl.textContent
+          });
         }
+      } else {
+        console.error('[StatCard] .stat-card-number element not found!', {
+          title: this.config.title,
+          containerHTML: this.container.innerHTML
+        });
       }
     }
 

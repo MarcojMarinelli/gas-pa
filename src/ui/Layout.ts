@@ -300,6 +300,18 @@ export class Layout {
     const sidebar = this.container.querySelector('.sidebar-nav');
     if (sidebar) {
       sidebar.innerHTML = this.navigationItems.map(item => this.renderNavigationItem(item)).join('');
+
+      // Re-attach event listeners to new navigation items
+      const navItems = sidebar.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const route = (e.currentTarget as HTMLElement).dataset.route;
+          if (route) {
+            this.navigateTo(route);
+          }
+        });
+      });
     }
 
     this.currentRoute = route;

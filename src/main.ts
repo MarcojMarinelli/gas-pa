@@ -475,20 +475,17 @@ function exportConfiguration(): any {
   return config;
 }
 
-// Export functions for GAS (make them globally available)
-declare const global: any;
-global.simpleTest = simpleTest;
-global.authorizeScript = authorizeScript;
-global.cleanupProperties = cleanupProperties;
-global.setup = setup;
-global.testEmailProcessing = testEmailProcessing;
-global.testDailySummary = testDailySummary;
-global.processEmailsPeriodically = processEmailsPeriodically;
-global.sendDailySummary = sendDailySummary;
-global.sendWeeklySummary = sendWeeklySummary;
-global.cleanupOldData = cleanupOldData;
-global.getConfiguration = getConfiguration;
-global.updateConfiguration = updateConfiguration;
-global.getStatistics = getStatistics;
-global.reprocessEmails = reprocessEmails;
-global.exportConfiguration = exportConfiguration;
+// Export for TypeScript
+export {
+  simpleTest,
+  authorizeScript,
+  cleanupProperties,
+  setup,
+  testEmailProcessing,
+  testDailySummary,
+  getConfiguration,
+  updateConfiguration,
+  getStatistics,
+  reprocessEmails,
+  exportConfiguration
+};

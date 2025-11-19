@@ -1,11 +1,13 @@
 /**
  * Main Application Controller
  * Coordinates Layout, Dashboard, and other page components
- * Phase 2 - Task 1.2: Navigation Implementation
+ * Phase 3.1: API Client Integration
  */
 
 import { Layout, createLayout } from './Layout';
-import { Dashboard, createDashboard, DashboardMetrics, QueueItem } from './pages/Dashboard';
+import { Dashboard, createDashboard, DashboardMetrics } from './pages/Dashboard';
+import { QueueItem } from '../types/shared-models';
+import { ApiClient, createApiClient } from './services/api-client';
 
 export interface AppConfig {
   container: HTMLElement;
@@ -15,10 +17,13 @@ export interface AppConfig {
     email: string;
     avatar?: string;
   };
+  enableMockData?: boolean; // Fallback to mock data if API fails
 }
 
 interface PageComponent {
+  container: HTMLElement;
   destroy: () => void;
+  instance?: any;  // Optional reference to the actual page instance (e.g., Dashboard)
 }
 
 export class App {
@@ -28,10 +33,33 @@ export class App {
   private currentPage: PageComponent | null = null;
   private pages: Map<string, () => Promise<PageComponent>> = new Map();
   private refreshInterval: number | null = null;
+  private api: ApiClient;
+  private useMockData: boolean = false;
 
   constructor(config: AppConfig) {
     this.config = config;
     this.container = config.container;
+
+    // Initialize API client
+    this.api = createApiClient({
+      baseUrl: config.apiEndpoint || '',
+      timeout: 30000,
+      retries: 2,
+      retryDelay: 1000,
+      onError: (error) => {
+        console.error('API Error:', error);
+        // Show error toast if available
+        this.showErrorToast(error.message);
+      },
+      onRequest: (url, options) => {
+        console.log(`API Request: ${options.method} ${url}`);
+      },
+      onResponse: (response) => {
+        console.log(`API Response: ${response.status} ${response.statusText}`);
+      }
+    });
+
+    this.useMockData = config.enableMockData || false;
     this.registerPages();
     this.init();
   }
@@ -48,10 +76,13 @@ export class App {
         onQueueItemClick: (item) => this.handleQueueItemClick(item)
       });
 
-      // Load initial data
-      await this.refreshDashboardData();
+      // Note: Don't load data here - it will be loaded after currentPage is set
 
-      return dashboard;
+      return {
+        container,
+        destroy: () => dashboard.destroy(),
+        instance: dashboard  // Store the dashboard instance for updates
+      };
     });
 
     this.pages.set('queue', async () => {
@@ -96,6 +127,7 @@ export class App {
       `;
 
       return {
+        container,
         destroy: () => {
           container.remove();
         }
@@ -148,6 +180,7 @@ export class App {
       `;
 
       return {
+        container,
         destroy: () => {
           container.remove();
         }
@@ -225,6 +258,7 @@ export class App {
       `;
 
       return {
+        container,
         destroy: () => {
           container.remove();
         }
@@ -278,11 +312,12 @@ export class App {
         const page = await pageLoader();
         this.currentPage = page;
 
-        // Set content
-        if (page instanceof Dashboard) {
-          this.layout.setContent((page as any).container);
-        } else {
-          this.layout.setContent((page as any).container || (page as any).element);
+        // Set content - page.container is now properly exposed
+        this.layout.setContent(page.container);
+
+        // Load initial data for dashboard AFTER currentPage is set
+        if (route === 'dashboard') {
+          await this.refreshDashboardData();
         }
 
         // Restart auto-refresh if returning to dashboard
@@ -324,53 +359,144 @@ export class App {
 
   private async refreshDashboardData(): Promise<void> {
     try {
-      // Simulate API call - replace with actual API integration
+      // Fetch data from API or use mock data as fallback
       const metrics = await this.fetchMetrics();
       const queueItems = await this.fetchQueueItems();
 
-      if (this.currentPage instanceof Dashboard) {
-        this.currentPage.updateMetrics(metrics);
-        this.currentPage.updateQueue(queueItems);
+      // Check if current page has a dashboard instance
+      if (this.currentPage?.instance && this.currentPage.instance instanceof Dashboard) {
+        console.log('Updating dashboard with metrics:', metrics);
+        this.currentPage.instance.updateMetrics(metrics);
+        this.currentPage.instance.updateQueue(queueItems);
         this.updateQueueBadge(queueItems.length);
+      } else {
+        console.warn('Dashboard instance not found, cannot update metrics');
       }
     } catch (error) {
       console.error('Failed to refresh dashboard data:', error);
+      this.showErrorToast('Failed to load dashboard data');
+
+      // Fallback to mock data if enabled
+      if (this.useMockData) {
+        const mockMetrics = this.generateMockMetrics();
+        const mockQueue = this.generateMockQueue();
+
+        if (this.currentPage?.instance && this.currentPage.instance instanceof Dashboard) {
+          this.currentPage.instance.updateMetrics(mockMetrics);
+          this.currentPage.instance.updateQueue(mockQueue);
+        }
+      }
     }
   }
 
   private async fetchMetrics(): Promise<DashboardMetrics> {
-    // Simulate API call - replace with actual implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          totalEmails: Math.floor(Math.random() * 10000) + 5000,
-          processedToday: Math.floor(Math.random() * 500) + 100,
-          pendingActions: Math.floor(Math.random() * 50) + 10,
-          avgProcessingTime: Math.random() * 10 + 2,
-          emailTrends: Array.from({ length: 7 }, () => Math.random() * 100),
-          processingTrends: Array.from({ length: 7 }, () => Math.random() * 50),
-          pendingTrends: Array.from({ length: 7 }, () => Math.random() * 20),
-          timeTrends: Array.from({ length: 7 }, () => Math.random() * 15)
+    if (this.useMockData) {
+      return this.generateMockMetrics();
+    }
+
+    try {
+      // Use google.script.run for GAS web app
+      if (typeof (window as any).google !== 'undefined' && (window as any).google.script) {
+        return new Promise((resolve, reject) => {
+          (window as any).google.script.run
+            .withSuccessHandler((metrics: DashboardMetrics) => {
+              console.log('Metrics fetched successfully:', metrics);
+              resolve(metrics);
+            })
+            .withFailureHandler((error: Error) => {
+              console.error('Failed to fetch metrics via google.script.run:', error);
+              reject(error);
+            })
+            .getDashboardMetrics();
         });
-      }, 500);
-    });
+      }
+
+      // Fallback to API fetch (for local development)
+      const metrics = await this.api.metrics.getOverview();
+      return metrics;
+    } catch (error) {
+      console.error('Failed to fetch metrics:', error);
+
+      // Fallback to mock data
+      if (this.config.enableMockData) {
+        console.warn('Falling back to mock metrics data');
+        return this.generateMockMetrics();
+      }
+
+      throw error;
+    }
   }
 
   private async fetchQueueItems(): Promise<QueueItem[]> {
-    // Simulate API call - replace with actual implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const items: QueueItem[] = Array.from({ length: 15 }, (_, i) => ({
-          id: `item-${i}`,
-          subject: `Email Subject ${i + 1}`,
-          from: `sender${i + 1}@example.com`,
-          date: new Date(Date.now() - Math.random() * 86400000 * 7),
-          priority: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)] as any,
-          status: ['pending', 'processing', 'completed'][Math.floor(Math.random() * 3)] as any
-        }));
-        resolve(items);
-      }, 300);
-    });
+    if (this.useMockData) {
+      return this.generateMockQueue();
+    }
+
+    try {
+      // Use google.script.run for GAS web app
+      if (typeof (window as any).google !== 'undefined' && (window as any).google.script) {
+        return new Promise((resolve, reject) => {
+          (window as any).google.script.run
+            .withSuccessHandler((response: any) => {
+              console.log('Queue items fetched successfully:', response);
+              resolve(response.items || []);
+            })
+            .withFailureHandler((error: Error) => {
+              console.error('Failed to fetch queue via google.script.run:', error);
+              reject(error);
+            })
+            .getQueueItems({
+              page: 1,
+              pageSize: 15,
+              status: 'pending'
+            });
+        });
+      }
+
+      // Fallback to API fetch (for local development)
+      const response = await this.api.queue.getAll({
+        page: 1,
+        pageSize: 15,
+        status: 'pending'
+      });
+
+      return response.items;
+    } catch (error) {
+      console.error('Failed to fetch queue items:', error);
+
+      // Fallback to mock data
+      if (this.config.enableMockData) {
+        console.warn('Falling back to mock queue data');
+        return this.generateMockQueue();
+      }
+
+      throw error;
+    }
+  }
+
+  // Mock data generators (for development/fallback)
+  private generateMockMetrics(): DashboardMetrics {
+    return {
+      totalEmails: Math.floor(Math.random() * 10000) + 5000,
+      processedToday: Math.floor(Math.random() * 500) + 100,
+      pendingActions: Math.floor(Math.random() * 50) + 10,
+      avgProcessingTime: Math.random() * 10 + 2,
+      emailTrends: Array.from({ length: 7 }, () => Math.random() * 100),
+      processingTrends: Array.from({ length: 7 }, () => Math.random() * 50),
+      pendingTrends: Array.from({ length: 7 }, () => Math.random() * 20),
+      timeTrends: Array.from({ length: 7 }, () => Math.random() * 15)
+    };
+  }
+
+  private generateMockQueue(): QueueItem[] {
+    return Array.from({ length: 15 }, (_, i) => ({
+      id: `item-${i}`,
+      subject: `Email Subject ${i + 1}`,
+      from: `sender${i + 1}@example.com`,
+      date: new Date(Date.now() - Math.random() * 86400000 * 7),
+      priority: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)] as any,
+      status: ['pending', 'processing', 'completed'][Math.floor(Math.random() * 3)] as any
+    }));
   }
 
   private updateQueueBadge(count?: number): void {
@@ -387,6 +513,36 @@ export class App {
     // TODO: Implement item selection in queue page
   }
 
+  private showErrorToast(message: string): void {
+    // Simple error notification
+    // TODO: Implement proper toast notification system
+    console.error('Error Toast:', message);
+
+    // Create simple error element
+    const errorEl = document.createElement('div');
+    errorEl.className = 'error-toast';
+    errorEl.textContent = message;
+    errorEl.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--color-error);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    `;
+
+    document.body.appendChild(errorEl);
+
+    setTimeout(() => {
+      errorEl.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => errorEl.remove(), 300);
+    }, 5000);
+  }
+
   public destroy(): void {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
@@ -397,6 +553,11 @@ export class App {
     if (this.layout) {
       this.layout.destroy();
     }
+  }
+
+  // Public API for external access
+  public getApi(): ApiClient {
+    return this.api;
   }
 }
 

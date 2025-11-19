@@ -41,6 +41,8 @@
     "automation",
     "personal-assistant",
     "typescript"
-  ]
+  ],
+  "dependencies": {
+    "zod": "^4.1.12"
+  }
 }
-

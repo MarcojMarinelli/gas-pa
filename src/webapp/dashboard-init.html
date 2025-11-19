@@ -1,0 +1,76 @@
+<script>
+(function() {
+  'use strict';
+
+  // Get user info from global variable (set by main template)
+  const user = window.GAS_USER || { name: 'User', email: '' };
+
+  console.log('Initializing GAS-PA Dashboard...');
+  console.log('User:', user.email);
+
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+
+  function initApp() {
+    try {
+      const container = document.getElementById('app');
+
+      if (!container) {
+        throw new Error('App container not found');
+      }
+
+      // Check if App global is available
+      if (typeof App === 'undefined') {
+        throw new Error('App bundle not loaded. Please refresh the page.');
+      }
+
+      console.log('Creating app instance...');
+
+      // Create app instance using the global App namespace
+      const app = App.createApp({
+        container: container,
+        user: user,
+        apiEndpoint: '',  // Same origin, no prefix needed
+        enableMockData: false  // Use real API data
+      });
+
+      console.log('✓ App initialized successfully');
+
+      // Hide loading screen after a brief delay
+      setTimeout(function() {
+        const loading = document.getElementById('app-loading');
+        if (loading) {
+          loading.classList.add('hidden');
+          setTimeout(function() {
+            loading.remove();
+          }, 500);
+        }
+      }, 800);
+
+    } catch (error) {
+      console.error('Failed to initialize app:', error);
+
+      // Show error message
+      const loading = document.getElementById('app-loading');
+      if (loading) {
+        loading.innerHTML = '<div class="loading-logo">GAS-PA</div><div style="color: white; max-width: 400px; text-align: center; padding: 20px;"><h2 style="margin-bottom: 16px; font-size: 24px;">Initialization Error</h2><p style="margin-bottom: 16px; font-size: 14px; opacity: 0.9;">' + (error.message || 'Failed to load the dashboard. Please try refreshing the page.') + '</p><button onclick="window.location.reload()" style="background: white; color: #1976d2; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">Refresh Page</button></div>';
+      }
+    }
+  }
+
+  // Global error handler
+  window.addEventListener('error', function(event) {
+    console.error('Global error:', event.error);
+  });
+
+  // Unhandled promise rejection handler
+  window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+  });
+
+})();
+</script>
